@@ -14,18 +14,17 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.InfinispanCollections;
-import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.container.entries.InternalCacheValue;
-import org.infinispan.loaders.CacheLoaderConfig;
-import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.loaders.CacheLoaderMetadata;
-import org.infinispan.loaders.LockSupportCacheStore;
-import org.infinispan.loaders.leveldb.LevelDBCacheStoreConfig.ImplementationType;
-import org.infinispan.loaders.leveldb.logging.Log;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.marshall.StreamingMarshaller;
+import org.infinispan.commons.util.InfinispanCollections;
 import org.infinispan.commons.util.Util;
+import org.infinispan.configuration.cache.CacheLoaderConfiguration;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.entries.InternalCacheValue;
+import org.infinispan.loaders.CacheLoaderException;
+import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
+import org.infinispan.loaders.leveldb.logging.Log;
+import org.infinispan.loaders.spi.LockSupportCacheStore;
 import org.infinispan.util.logging.LogFactory;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
@@ -34,7 +33,6 @@ import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
 import org.iq80.leveldb.ReadOptions;
 
-@CacheLoaderMetadata(configurationClass = LevelDBCacheStoreConfig.class)
 public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
    private static final Log log = LogFactory.getLog(LevelDBCacheStore.class, Log.class);
 
@@ -42,22 +40,16 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
    private static final String JAVA_DB_FACTORY_CLASS_NAME = "org.iq80.leveldb.impl.Iq80DBFactory";
    private static final String[] DB_FACTORY_CLASS_NAMES = new String[] { JNI_DB_FACTORY_CLASS_NAME, JAVA_DB_FACTORY_CLASS_NAME };
 
-   private LevelDBCacheStoreConfig config;
+   private LevelDBCacheStoreConfiguration configuration;
    private BlockingQueue<ExpiryEntry> expiryEntryQueue;
    private DBFactory dbFactory;
    private DB db;
    private DB expiredDb;
 
    @Override
-   public Class<? extends CacheLoaderConfig> getConfigurationClass() {
-      return LevelDBCacheStoreConfig.class;
-   }
-
-   @Override
-   public void init(CacheLoaderConfig config, Cache<?, ?> cache, StreamingMarshaller m) throws CacheLoaderException {
+   public void init(CacheLoaderConfiguration config, Cache<?, ?> cache, StreamingMarshaller m) throws CacheLoaderException {
+      this.configuration = validateConfigurationClass(config, LevelDBCacheStoreConfiguration.class);
       super.init(config, cache, m);
-
-      this.config = (LevelDBCacheStoreConfig) config;
 
       this.dbFactory = newDbFactory();
 
@@ -74,19 +66,17 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
    }
 
    protected DBFactory newDbFactory() {
-      ImplementationType type = ImplementationType.valueOf(config.getImplementationType());
-
-      switch (type) {
+      switch (configuration.implementationType()) {
       case JNI: {
-         return Util.<DBFactory> getInstance(JNI_DB_FACTORY_CLASS_NAME, config.getClassLoader());
+         return Util.<DBFactory> getInstance(JNI_DB_FACTORY_CLASS_NAME, LevelDBCacheStore.class.getClassLoader());
       }
       case JAVA: {
-         return Util.<DBFactory> getInstance(JAVA_DB_FACTORY_CLASS_NAME, config.getClassLoader());
+         return Util.<DBFactory> getInstance(JAVA_DB_FACTORY_CLASS_NAME, LevelDBCacheStore.class.getClassLoader());
       }
       default: {
          for (String className : DB_FACTORY_CLASS_NAMES) {
             try {
-               return Util.<DBFactory> getInstance(className, config.getClassLoader());
+               return Util.<DBFactory> getInstance(className, LevelDBCacheStore.class.getClassLoader());
             } catch (Throwable e) {
                if (log.isDebugEnabled())
                   log.debugUnableToInstantiateDbFactory(className, e);
@@ -100,12 +90,12 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
 
    @Override
    public void start() throws CacheLoaderException {
-      expiryEntryQueue = new LinkedBlockingQueue<ExpiryEntry>(config.getExpiryQueueSize());
+      expiryEntryQueue = new LinkedBlockingQueue<ExpiryEntry>(configuration.expiryQueueSize());
 
       try {
          String cacheFileName = cache.getName().replaceAll("[^a-zA-Z0-9-_\\.]", "_");
-         db = openDatabase(config.getLocation() + cacheFileName, config.getDataDbOptions());
-         expiredDb = openDatabase(config.getExpiredLocation() + cacheFileName, config.getExpiredDbOptions());
+         db = openDatabase(configuration.location() + cacheFileName, configuration.dataDbOptions());
+         expiredDb = openDatabase(configuration.expiredLocation() + cacheFileName, configuration.expiredDbOptions());
       } catch (IOException e) {
          throw new CacheConfigurationException("Unable to open database", e);
       }
@@ -150,8 +140,8 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
       } catch (IOException e) {
          log.warnUnableToCloseExpiredDb(e);
       }
-      db = reinitDatabase(config.getLocation(), config.getDataDbOptions());
-      expiredDb = reinitDatabase(config.getExpiredLocation(), config.getExpiredDbOptions());
+      db = reinitDatabase(configuration.location(), configuration.dataDbOptions());
+      expiredDb = reinitDatabase(configuration.expiredLocation(), configuration.expiredDbOptions());
    }
 
    @Override
@@ -177,14 +167,14 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
       DBIterator it = db.iterator(new ReadOptions().fillCache(false));
       boolean destroyDatabase = false;
 
-      if (config.getClearThreshold() <= 0) {
+      if (configuration.clearThreshold() <= 0) {
          try {
             for (it.seekToFirst(); it.hasNext();) {
                Map.Entry<byte[], byte[]> entry = it.next();
                db.delete(entry.getKey());
                count++;
 
-               if (count > config.clearThreshold) {
+               if (count > configuration.clearThreshold()) {
                   destroyDatabase = true;
                   break;
                }

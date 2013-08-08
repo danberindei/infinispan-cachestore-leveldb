@@ -2,11 +2,14 @@ package org.infinispan.loaders.leveldb;
 
 import java.io.File;
 
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.loaders.BaseCacheStoreTest;
 import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.loaders.CacheStore;
-import org.infinispan.loaders.CacheStoreConfig;
+import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
+import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfigurationBuilder;
+import org.infinispan.loaders.spi.CacheStore;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestInternalCacheEntryFactory;
 import org.testng.annotations.AfterClass;
@@ -30,20 +33,21 @@ public class LevelDBCacheStoreTest extends BaseCacheStoreTest {
       new File(tmpDirectory).mkdirs();
    }
 
-   protected LevelDBCacheStoreConfig createCacheStoreConfig() throws CacheLoaderException {
-      LevelDBCacheStoreConfig cfg = new LevelDBCacheStoreConfig();
-      cfg.setLocation(tmpDirectory + "/data");
-      cfg.setExpiredLocation(tmpDirectory + "/expiry");
-      cfg.setClearThreshold(2);
-      cfg.setPurgeSynchronously(true); // for more accurate unit testing
-      return cfg;
+   protected LevelDBCacheStoreConfiguration createCacheStoreConfig(LoadersConfigurationBuilder lcb) throws CacheLoaderException {
+      LevelDBCacheStoreConfigurationBuilder cfg = new LevelDBCacheStoreConfigurationBuilder(lcb);
+      cfg.location(tmpDirectory + "/data");
+      cfg.expiredLocation(tmpDirectory + "/expiry");
+      cfg.clearThreshold(2);
+      cfg.purgeSynchronously(true); // for more accurate unit testing
+      return cfg.create();
    }
 
    @Override
    protected CacheStore createCacheStore() throws CacheLoaderException {
       clearTempDir();
       fcs = new LevelDBCacheStore();
-      LevelDBCacheStoreConfig cfg = createCacheStoreConfig();
+      ConfigurationBuilder cb = new ConfigurationBuilder();
+      LevelDBCacheStoreConfiguration cfg = createCacheStoreConfig(cb.loaders());
       fcs.init(cfg, getCache(), getMarshaller());
       fcs.start();
       return fcs;

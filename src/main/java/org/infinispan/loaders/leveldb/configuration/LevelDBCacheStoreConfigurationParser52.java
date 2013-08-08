@@ -3,6 +3,7 @@ package org.infinispan.loaders.leveldb.configuration;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.infinispan.commons.util.StringPropertyReplacer;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ConfigurationParser;
@@ -11,8 +12,6 @@ import org.infinispan.configuration.parsing.Namespaces;
 import org.infinispan.configuration.parsing.ParseUtils;
 import org.infinispan.configuration.parsing.Parser52;
 import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
-import org.infinispan.loaders.leveldb.LevelDBCacheStoreConfig.ImplementationType;
-import org.infinispan.commons.util.StringPropertyReplacer;
 import org.iq80.leveldb.CompressionType;
 
 /**
@@ -57,7 +56,7 @@ public class LevelDBCacheStoreConfigurationParser52 implements ConfigurationPars
             break;
          }
          case IMPLEMENTATION_TYPE: {
-            builder.implementationType(ImplementationType.valueOf(value));
+            builder.implementationType(LevelDBCacheStoreConfiguration.ImplementationType.valueOf(value));
             break;
          }
          case CLEAR_THRESHOLD: {

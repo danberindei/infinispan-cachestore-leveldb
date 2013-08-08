@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
 import org.infinispan.loaders.MultiCacheStoreFunctionalTest;
+import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
 import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfigurationBuilder;
 import org.infinispan.test.TestingUtil;
 import org.testng.annotations.BeforeClass;
@@ -32,7 +33,7 @@ public class LevelDBMultiCacheStoreFunctionalTest extends MultiCacheStoreFunctio
       LevelDBCacheStoreConfigurationBuilder store = loaders.addStore(LevelDBCacheStoreConfigurationBuilder.class);
       store.location(tmpDir.getAbsolutePath() + File.separator + "leveldb" + File.separator + "data-" + discriminator);
       store.expiredLocation(tmpDir.getAbsolutePath() + File.separator + "leveldb" + File.separator + "expired-data-" + discriminator);
-      store.implementationType(LevelDBCacheStoreConfig.ImplementationType.JAVA);
+      store.implementationType(LevelDBCacheStoreConfiguration.ImplementationType.JAVA);
       return store;
    }
 }

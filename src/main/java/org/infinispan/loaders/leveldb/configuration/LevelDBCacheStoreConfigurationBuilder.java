@@ -1,11 +1,9 @@
 package org.infinispan.loaders.leveldb.configuration;
 
-import org.infinispan.configuration.cache.AbstractLockSupportStoreConfigurationBuilder;
-import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
-import org.infinispan.loaders.leveldb.LevelDBCacheStoreConfig;
-import org.infinispan.loaders.leveldb.LevelDBCacheStoreConfig.ImplementationType;
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.commons.util.TypedProperties;
+import org.infinispan.configuration.cache.AbstractLockSupportStoreConfigurationBuilder;
+import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
 import org.iq80.leveldb.CompressionType;
 
 /**
@@ -15,15 +13,15 @@ import org.iq80.leveldb.CompressionType;
  */
 public class LevelDBCacheStoreConfigurationBuilder extends AbstractLockSupportStoreConfigurationBuilder<LevelDBCacheStoreConfiguration, LevelDBCacheStoreConfigurationBuilder> {
 
-   protected String location = LevelDBCacheStoreConfig.DEFAULT_LOCATION;
-   protected String expiredLocation = LevelDBCacheStoreConfig.DEFAULT_EXPIRED_LOCATION;
-   protected CompressionType compressionType = LevelDBCacheStoreConfig.DEFAULT_COMPRESSION_TYPE;
-   protected ImplementationType implementationType = LevelDBCacheStoreConfig.DEFAULT_IMPLEMENTATION_TYPE;
+   protected String location = "Infinispan-LevelDBCacheStore/data";
+   protected String expiredLocation = "Infinispan-LevelDBCacheStore/expired";
+   protected CompressionType compressionType = CompressionType.NONE;
+   protected LevelDBCacheStoreConfiguration.ImplementationType implementationType = LevelDBCacheStoreConfiguration.ImplementationType.AUTO;
    protected Integer blockSize;
    protected Long cacheSize;
 
-   protected int expiryQueueSize = LevelDBCacheStoreConfig.DEFAULT_EXPIRY_QUEUE_SIZE;
-   protected int clearThreshold = LevelDBCacheStoreConfig.DEFAULT_CLEAR_THRESHOLD;
+   protected int expiryQueueSize = 10000;
+   protected int clearThreshold = 10000;
 
    public LevelDBCacheStoreConfigurationBuilder(LoadersConfigurationBuilder builder) {
       super(builder);
@@ -39,7 +37,7 @@ public class LevelDBCacheStoreConfigurationBuilder extends AbstractLockSupportSt
       return self();
    }
 
-   public LevelDBCacheStoreConfigurationBuilder implementationType(ImplementationType implementationType) {
+   public LevelDBCacheStoreConfigurationBuilder implementationType(LevelDBCacheStoreConfiguration.ImplementationType implementationType) {
       this.implementationType = implementationType;
       return self();
    }

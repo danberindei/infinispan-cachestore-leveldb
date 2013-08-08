@@ -1,23 +1,29 @@
 package org.infinispan.loaders.leveldb.configuration;
 
+import org.infinispan.commons.configuration.BuiltBy;
+import org.infinispan.commons.configuration.ConfigurationFor;
+import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.configuration.cache.AbstractLockSupportStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
-import org.infinispan.configuration.cache.LegacyConfigurationAdaptor;
-import org.infinispan.configuration.cache.LegacyLoaderAdapter;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
-import org.infinispan.loaders.leveldb.LevelDBCacheStoreConfig;
-import org.infinispan.loaders.leveldb.LevelDBCacheStoreConfig.ImplementationType;
-import org.infinispan.commons.configuration.BuiltBy;
-import org.infinispan.commons.util.TypedProperties;
+import org.infinispan.loaders.leveldb.LevelDBCacheStore;
 import org.iq80.leveldb.CompressionType;
+import org.iq80.leveldb.Options;
 
 /**
  * 
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  * 
  */
+@ConfigurationFor(LevelDBCacheStore.class)
 @BuiltBy(LevelDBCacheStoreConfigurationBuilder.class)
-public class LevelDBCacheStoreConfiguration extends AbstractLockSupportStoreConfiguration implements LegacyLoaderAdapter<LevelDBCacheStoreConfig> {
+public class LevelDBCacheStoreConfiguration extends AbstractLockSupportStoreConfiguration {
+   public enum ImplementationType {
+      AUTO,
+      JAVA,
+      JNI
+   }
+
    final private String location;
    final private String expiredLocation;
    final private ImplementationType implementationType;
@@ -42,23 +48,6 @@ public class LevelDBCacheStoreConfiguration extends AbstractLockSupportStoreConf
       this.cacheSize = cacheSize;
       this.expiryQueueSize = expiryQueueSize;
       this.clearThreshold = clearThreshold;
-   }
-
-   @Override
-   public LevelDBCacheStoreConfig adapt() {
-      LevelDBCacheStoreConfig config = new LevelDBCacheStoreConfig();
-
-      LegacyConfigurationAdaptor.adapt(this, config);
-      config.setLocation(location);
-      config.setExpiredLocation(expiredLocation);
-      config.setCompressionType(compressionType.toString());
-      config.setImplementationType(implementationType.toString());
-      config.setBlockSize(blockSize);
-      config.setCacheSize(cacheSize);
-      config.setExpiryQueueSize(expiryQueueSize);
-      config.setClearThreshold(clearThreshold);
-
-      return config;
    }
 
    public String location() {
@@ -91,5 +80,25 @@ public class LevelDBCacheStoreConfiguration extends AbstractLockSupportStoreConf
 
    public int clearThreshold() {
       return clearThreshold;
+   }
+
+   public Options dataDbOptions() {
+      Options options = new Options().createIfMissing(true);
+
+      options.compressionType(compressionType);
+
+      if (blockSize != null) {
+         options.blockSize(blockSize);
+      }
+
+      if (cacheSize != null) {
+         options.cacheSize(cacheSize);
+      }
+
+      return options;
+   }
+
+   public Options expiredDbOptions() {
+      return new Options().createIfMissing(true);
    }
 }

@@ -12,7 +12,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.loaders.leveldb.LevelDBCacheStore;
-import org.infinispan.loaders.leveldb.LevelDBCacheStoreConfig.ImplementationType;
 import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
 import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
@@ -24,19 +23,15 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
- * 
+ *
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
- * 
+ *
  */
 @Test(groups = "unit", testName = "loaders.leveldb.configuration.ConfigurationTest")
 public class ConfigurationTest extends AbstractInfinispanTest {
    private String tmpDirectory;
    private String tmpDataDirectory;
    private String tmpExpiredDirectory;
-
-   protected ImplementationType getImplementationType() {
-      return ImplementationType.AUTO;
-   }
 
    @BeforeTest
    protected void setUpTempDir() {
@@ -54,7 +49,7 @@ public class ConfigurationTest extends AbstractInfinispanTest {
       GlobalConfiguration globalConfig = new GlobalConfigurationBuilder().globalJmxStatistics().transport().defaultTransport().build();
 
       Configuration cacheConfig = new ConfigurationBuilder().loaders().addLoader(LevelDBCacheStoreConfigurationBuilder.class).location(tmpDataDirectory)
-            .expiredLocation(tmpExpiredDirectory).implementationType(getImplementationType()).build();
+            .expiredLocation(tmpExpiredDirectory).implementationType(LevelDBCacheStoreConfiguration.ImplementationType.AUTO).build();
 
       CacheLoaderConfiguration cacheLoaderConfig = cacheConfig.loaders().cacheLoaders().get(0);
       assertTrue(cacheLoaderConfig instanceof LevelDBCacheStoreConfiguration);
@@ -74,11 +69,12 @@ public class ConfigurationTest extends AbstractInfinispanTest {
       cacheManager.stop();
    }
 
+   @Test(enabled = false, description = "ISPN-3388")
    public void testLegacyJavaConfig() {
       GlobalConfiguration globalConfig = new GlobalConfigurationBuilder().globalJmxStatistics().transport().defaultTransport().build();
 
       Configuration cacheConfig = new ConfigurationBuilder().loaders().addStore().cacheStore(new LevelDBCacheStore()).addProperty("location", tmpDataDirectory)
-            .addProperty("expiredLocation", tmpExpiredDirectory).addProperty("implementationType", getImplementationType().toString()).build();
+            .addProperty("expiredLocation", tmpExpiredDirectory).addProperty("implementationType", LevelDBCacheStoreConfiguration.ImplementationType.AUTO.toString()).build();
 
       EmbeddedCacheManager cacheManager = new DefaultCacheManager(globalConfig);
 
@@ -92,8 +88,10 @@ public class ConfigurationTest extends AbstractInfinispanTest {
       cacheManager.stop();
    }
 
+   @Test(enabled = false, description = "ISPN-3388")
    public void textXmlConfigLegacy() throws IOException {
-      EmbeddedCacheManager cacheManager = new DefaultCacheManager("config/leveldb-config-legacy-" + getImplementationType().toString().toLowerCase() + ".xml");
+      EmbeddedCacheManager cacheManager = new DefaultCacheManager("config/leveldb-config-legacy-" +
+            LevelDBCacheStoreConfiguration.ImplementationType.AUTO.toString().toLowerCase() + ".xml");
       Cache<String, String> cache = cacheManager.getCache("testCache");
 
       cache.put("hello", "there legacy xml");
@@ -104,7 +102,8 @@ public class ConfigurationTest extends AbstractInfinispanTest {
    }
 
    public void testXmlConfig52() throws IOException {
-      EmbeddedCacheManager cacheManager = new DefaultCacheManager("config/leveldb-config-52-" + getImplementationType().toString().toLowerCase() + ".xml");
+      EmbeddedCacheManager cacheManager = new DefaultCacheManager("config/leveldb-config-52-" +
+            LevelDBCacheStoreConfiguration.ImplementationType.AUTO.toString().toLowerCase() + ".xml");
 
       Cache<String, String> cache = cacheManager.getCache("testCache");
 
