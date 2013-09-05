@@ -20,9 +20,9 @@ import org.iq80.leveldb.CompressionType;
  * 
  */
 @Namespaces({ @Namespace(uri = "urn:infinispan:config:leveldb:6.0", root = "leveldbStore"), @Namespace(root = "leveldbStore") })
-public class LevelDBCacheStoreConfigurationParser60 implements ConfigurationParser {
+public class LevelDBStoreConfigurationParser60 implements ConfigurationParser {
 
-   public LevelDBCacheStoreConfigurationParser60() {
+   public LevelDBStoreConfigurationParser60() {
    }
 
    @Override
@@ -31,7 +31,7 @@ public class LevelDBCacheStoreConfigurationParser60 implements ConfigurationPars
       Element element = Element.forName(reader.getLocalName());
       switch (element) {
       case LEVELDB_STORE: {
-         parseLevelDBCacheStore(reader, builder.persistence().addStore(LevelDBCacheStoreConfigurationBuilder.class));
+         parseLevelDBCacheStore(reader, builder.persistence().addStore(LevelDBStoreConfigurationBuilder.class));
          break;
       }
       default: {
@@ -40,7 +40,7 @@ public class LevelDBCacheStoreConfigurationParser60 implements ConfigurationPars
       }
    }
 
-   private void parseLevelDBCacheStore(XMLExtendedStreamReader reader, LevelDBCacheStoreConfigurationBuilder builder) throws XMLStreamException {
+   private void parseLevelDBCacheStore(XMLExtendedStreamReader reader, LevelDBStoreConfigurationBuilder builder) throws XMLStreamException {
       for (int i = 0; i < reader.getAttributeCount(); i++) {
          ParseUtils.requireNoNamespaceAttribute(reader, i);
          String attributeValue = reader.getAttributeValue(i);
@@ -58,7 +58,7 @@ public class LevelDBCacheStoreConfigurationParser60 implements ConfigurationPars
                break;
             }
             case IMPLEMENTATION_TYPE: {
-               builder.implementationType(LevelDBCacheStoreConfiguration.ImplementationType.valueOf(value));
+               builder.implementationType(LevelDBStoreConfiguration.ImplementationType.valueOf(value));
                break;
             }
             case CLEAR_THRESHOLD: {

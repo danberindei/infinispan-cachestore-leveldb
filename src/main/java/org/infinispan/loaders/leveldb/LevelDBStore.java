@@ -2,8 +2,7 @@ package org.infinispan.loaders.leveldb;
 
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.util.Util;
-import org.infinispan.container.entries.InternalCacheValue;
-import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
+import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
 import org.infinispan.loaders.leveldb.logging.Log;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.persistence.CacheLoaderException;
@@ -32,14 +31,14 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class LevelDBCacheStore implements AdvancedLoadWriteStore {
-   private static final Log log = LogFactory.getLog(LevelDBCacheStore.class, Log.class);
+public class LevelDBStore implements AdvancedLoadWriteStore {
+   private static final Log log = LogFactory.getLog(LevelDBStore.class, Log.class);
 
    private static final String JNI_DB_FACTORY_CLASS_NAME = "org.fusesource.leveldbjni.JniDBFactory";
    private static final String JAVA_DB_FACTORY_CLASS_NAME = "org.iq80.leveldb.impl.Iq80DBFactory";
    private static final String[] DB_FACTORY_CLASS_NAMES = new String[] { JNI_DB_FACTORY_CLASS_NAME, JAVA_DB_FACTORY_CLASS_NAME };
 
-   private LevelDBCacheStoreConfiguration configuration;
+   private LevelDBStoreConfiguration configuration;
    private BlockingQueue<ExpiryEntry> expiryEntryQueue;
    private DBFactory dbFactory;
    private DB db;
@@ -67,15 +66,15 @@ public class LevelDBCacheStore implements AdvancedLoadWriteStore {
    protected DBFactory newDbFactory() {
       switch (configuration.implementationType()) {
          case JNI: {
-            return Util.getInstance(JNI_DB_FACTORY_CLASS_NAME, LevelDBCacheStore.class.getClassLoader());
+            return Util.getInstance(JNI_DB_FACTORY_CLASS_NAME, LevelDBStore.class.getClassLoader());
          }
          case JAVA: {
-            return Util.getInstance(JAVA_DB_FACTORY_CLASS_NAME, LevelDBCacheStore.class.getClassLoader());
+            return Util.getInstance(JAVA_DB_FACTORY_CLASS_NAME, LevelDBStore.class.getClassLoader());
          }
          default: {
             for (String className : DB_FACTORY_CLASS_NAMES) {
                try {
-                  return Util.getInstance(className, LevelDBCacheStore.class.getClassLoader());
+                  return Util.getInstance(className, LevelDBStore.class.getClassLoader());
                } catch (Throwable e) {
                   if (log.isDebugEnabled())
                      log.debugUnableToInstantiateDbFactory(className, e);

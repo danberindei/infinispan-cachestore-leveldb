@@ -7,8 +7,8 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
-import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfigurationBuilder;
+import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
+import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.BaseCacheStoreTest;
 import org.infinispan.persistence.CacheLoaderException;
@@ -23,10 +23,10 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(groups = "unit", testName = "loaders.leveldb.LevelDBCacheStoreTest")
-public class LevelDBCacheStoreTest extends BaseCacheStoreTest {
+@Test(groups = "unit", testName = "loaders.leveldb.LevelDBStoreTest")
+public class LevelDBStoreTest extends BaseCacheStoreTest {
 
-   private LevelDBCacheStore fcs;
+   private LevelDBStore fcs;
    private String tmpDirectory;
    private EmbeddedCacheManager cacheManager;
 
@@ -41,9 +41,9 @@ public class LevelDBCacheStoreTest extends BaseCacheStoreTest {
       new File(tmpDirectory).mkdirs();
    }
 
-   protected LevelDBCacheStoreConfiguration createCacheStoreConfig(PersistenceConfigurationBuilder lcb) {
+   protected LevelDBStoreConfiguration createCacheStoreConfig(PersistenceConfigurationBuilder lcb) {
       cacheManager = TestCacheManagerFactory.createCacheManager(CacheMode.LOCAL, false);
-      LevelDBCacheStoreConfigurationBuilder cfg = new LevelDBCacheStoreConfigurationBuilder(lcb);
+      LevelDBStoreConfigurationBuilder cfg = new LevelDBStoreConfigurationBuilder(lcb);
       cfg.location(tmpDirectory + "/data");
       cfg.expiredLocation(tmpDirectory + "/expiry");
       cfg.clearThreshold(2);
@@ -65,9 +65,9 @@ public class LevelDBCacheStoreTest extends BaseCacheStoreTest {
    @Override
    protected AdvancedLoadWriteStore createStore() throws Exception {
       clearTempDir();
-      fcs = new LevelDBCacheStore();
+      fcs = new LevelDBStore();
       ConfigurationBuilder cb = new ConfigurationBuilder();
-      LevelDBCacheStoreConfiguration cfg = createCacheStoreConfig(cb.persistence());
+      LevelDBStoreConfiguration cfg = createCacheStoreConfig(cb.persistence());
       fcs.init(new DummyLoaderContext(cfg, getCache(), getMarshaller()));
       fcs.start();
       return fcs;
@@ -87,7 +87,7 @@ public class LevelDBCacheStoreTest extends BaseCacheStoreTest {
       assert cl.contains("k3");
       Thread.sleep(lifespan + 100);
       cl.purge(new WithinThreadExecutor(), null);
-      LevelDBCacheStore fcs = (LevelDBCacheStore) cl;
+      LevelDBStore fcs = (LevelDBStore) cl;
       assert fcs.load("k1") == null;
       assert fcs.load("k2") == null;
       assert fcs.load("k3") == null;

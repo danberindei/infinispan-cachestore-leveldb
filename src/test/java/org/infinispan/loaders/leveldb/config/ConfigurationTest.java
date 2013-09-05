@@ -6,8 +6,8 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
-import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfigurationBuilder;
+import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
+import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.AbstractInfinispanTest;
@@ -47,12 +47,12 @@ public class ConfigurationTest extends AbstractInfinispanTest {
    public void testConfigBuilder() {
       GlobalConfiguration globalConfig = new GlobalConfigurationBuilder().globalJmxStatistics().transport().defaultTransport().build();
 
-      Configuration cacheConfig = new ConfigurationBuilder().persistence().addStore(LevelDBCacheStoreConfigurationBuilder.class).location(tmpDataDirectory)
-            .expiredLocation(tmpExpiredDirectory).implementationType(LevelDBCacheStoreConfiguration.ImplementationType.AUTO).build();
+      Configuration cacheConfig = new ConfigurationBuilder().persistence().addStore(LevelDBStoreConfigurationBuilder.class).location(tmpDataDirectory)
+            .expiredLocation(tmpExpiredDirectory).implementationType(LevelDBStoreConfiguration.ImplementationType.AUTO).build();
 
       StoreConfiguration cacheLoaderConfig = cacheConfig.persistence().stores().get(0);
-      assertTrue(cacheLoaderConfig instanceof LevelDBCacheStoreConfiguration);
-      LevelDBCacheStoreConfiguration leveldbConfig = (LevelDBCacheStoreConfiguration) cacheLoaderConfig;
+      assertTrue(cacheLoaderConfig instanceof LevelDBStoreConfiguration);
+      LevelDBStoreConfiguration leveldbConfig = (LevelDBStoreConfiguration) cacheLoaderConfig;
       assertEquals(tmpDataDirectory, leveldbConfig.location());
       assertEquals(tmpExpiredDirectory, leveldbConfig.expiredLocation());
 
@@ -72,8 +72,8 @@ public class ConfigurationTest extends AbstractInfinispanTest {
    public void testLegacyJavaConfig() {
       GlobalConfiguration globalConfig = new GlobalConfigurationBuilder().globalJmxStatistics().transport().defaultTransport().build();
 
-      Configuration cacheConfig = new ConfigurationBuilder().persistence().addStore(LevelDBCacheStoreConfigurationBuilder.class).addProperty("location", tmpDataDirectory)
-            .addProperty("expiredLocation", tmpExpiredDirectory).addProperty("implementationType", LevelDBCacheStoreConfiguration.ImplementationType.AUTO.toString()).build();
+      Configuration cacheConfig = new ConfigurationBuilder().persistence().addStore(LevelDBStoreConfigurationBuilder.class).addProperty("location", tmpDataDirectory)
+            .addProperty("expiredLocation", tmpExpiredDirectory).addProperty("implementationType", LevelDBStoreConfiguration.ImplementationType.AUTO.toString()).build();
 
       EmbeddedCacheManager cacheManager = new DefaultCacheManager(globalConfig);
 
@@ -90,7 +90,7 @@ public class ConfigurationTest extends AbstractInfinispanTest {
    @Test(enabled = false, description = "ISPN-3388")
    public void textXmlConfigLegacy() throws IOException {
       EmbeddedCacheManager cacheManager = new DefaultCacheManager("config/leveldb-config-legacy-" +
-            LevelDBCacheStoreConfiguration.ImplementationType.AUTO.toString().toLowerCase() + ".xml");
+            LevelDBStoreConfiguration.ImplementationType.AUTO.toString().toLowerCase() + ".xml");
       Cache<String, String> cache = cacheManager.getCache("testCache");
 
       cache.put("hello", "there legacy xml");
@@ -102,7 +102,7 @@ public class ConfigurationTest extends AbstractInfinispanTest {
 
    public void testXmlConfig60() throws IOException {
       EmbeddedCacheManager cacheManager = new DefaultCacheManager("config/leveldb-config-60-" +
-            LevelDBCacheStoreConfiguration.ImplementationType.AUTO.toString().toLowerCase() + ".xml");
+            LevelDBStoreConfiguration.ImplementationType.AUTO.toString().toLowerCase() + ".xml");
 
       Cache<String, String> cache = cacheManager.getCache("testCache");
 

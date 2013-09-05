@@ -5,7 +5,8 @@ import org.infinispan.commons.configuration.ConfigurationFor;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
-import org.infinispan.loaders.leveldb.LevelDBCacheStore;
+import org.infinispan.loaders.leveldb.LevelDBStore;
+import org.infinispan.loaders.leveldb.LevelDBStore;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.Options;
 
@@ -16,9 +17,9 @@ import java.util.Properties;
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  * 
  */
-@ConfigurationFor(LevelDBCacheStore.class)
-@BuiltBy(LevelDBCacheStoreConfigurationBuilder.class)
-public class LevelDBCacheStoreConfiguration extends AbstractStoreConfiguration {
+@ConfigurationFor(LevelDBStore.class)
+@BuiltBy(LevelDBStoreConfigurationBuilder.class)
+public class LevelDBStoreConfiguration extends AbstractStoreConfiguration {
    public enum ImplementationType {
       AUTO,
       JAVA,
@@ -35,7 +36,7 @@ public class LevelDBCacheStoreConfiguration extends AbstractStoreConfiguration {
    final private int clearThreshold;
 
 
-   public LevelDBCacheStoreConfiguration(boolean purgeOnStartup, boolean fetchPersistentState, boolean ignoreModifications, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore, boolean preload, boolean shared, Properties properties, String location, String expiredLocation, ImplementationType implementationType, CompressionType compressionType, Integer blockSize, Long cacheSize, int expiryQueueSize, int clearThreshold) {
+   public LevelDBStoreConfiguration(boolean purgeOnStartup, boolean fetchPersistentState, boolean ignoreModifications, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore, boolean preload, boolean shared, Properties properties, String location, String expiredLocation, ImplementationType implementationType, CompressionType compressionType, Integer blockSize, Long cacheSize, int expiryQueueSize, int clearThreshold) {
       super(purgeOnStartup, fetchPersistentState, ignoreModifications, async, singletonStore, preload, shared, properties);
       this.location = location;
       this.expiredLocation = expiredLocation;

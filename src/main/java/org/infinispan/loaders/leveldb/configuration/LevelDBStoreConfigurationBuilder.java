@@ -10,58 +10,58 @@ import org.iq80.leveldb.CompressionType;
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  * 
  */
-public class LevelDBCacheStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<LevelDBCacheStoreConfiguration, LevelDBCacheStoreConfigurationBuilder> {
+public class LevelDBStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<LevelDBStoreConfiguration, LevelDBStoreConfigurationBuilder> {
 
-   protected String location = "Infinispan-LevelDBCacheStore/data";
-   protected String expiredLocation = "Infinispan-LevelDBCacheStore/expired";
+   protected String location = "Infinispan-LevelDBStore/data";
+   protected String expiredLocation = "Infinispan-LevelDBStore/expired";
    protected CompressionType compressionType = CompressionType.NONE;
-   protected LevelDBCacheStoreConfiguration.ImplementationType implementationType = LevelDBCacheStoreConfiguration.ImplementationType.AUTO;
+   protected LevelDBStoreConfiguration.ImplementationType implementationType = LevelDBStoreConfiguration.ImplementationType.AUTO;
    protected Integer blockSize;
    protected Long cacheSize;
 
    protected int expiryQueueSize = 10000;
    protected int clearThreshold = 10000;
 
-   public LevelDBCacheStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
+   public LevelDBStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
       super(builder);
    }
 
-   public LevelDBCacheStoreConfigurationBuilder location(String location) {
+   public LevelDBStoreConfigurationBuilder location(String location) {
       this.location = location;
       return self();
    }
 
-   public LevelDBCacheStoreConfigurationBuilder expiredLocation(String expiredLocation) {
+   public LevelDBStoreConfigurationBuilder expiredLocation(String expiredLocation) {
       this.expiredLocation = expiredLocation;
       return self();
    }
 
-   public LevelDBCacheStoreConfigurationBuilder implementationType(LevelDBCacheStoreConfiguration.ImplementationType implementationType) {
+   public LevelDBStoreConfigurationBuilder implementationType(LevelDBStoreConfiguration.ImplementationType implementationType) {
       this.implementationType = implementationType;
       return self();
    }
 
-   public LevelDBCacheStoreConfigurationBuilder blockSize(int blockSize) {
+   public LevelDBStoreConfigurationBuilder blockSize(int blockSize) {
       this.blockSize = blockSize;
       return self();
    }
 
-   public LevelDBCacheStoreConfigurationBuilder cacheSize(long cacheSize) {
+   public LevelDBStoreConfigurationBuilder cacheSize(long cacheSize) {
       this.cacheSize = cacheSize;
       return self();
    }
 
-   public LevelDBCacheStoreConfigurationBuilder expiryQueueSize(int expiryQueueSize) {
+   public LevelDBStoreConfigurationBuilder expiryQueueSize(int expiryQueueSize) {
       this.expiryQueueSize = expiryQueueSize;
       return self();
    }
 
-   public LevelDBCacheStoreConfigurationBuilder clearThreshold(int clearThreshold) {
+   public LevelDBStoreConfigurationBuilder clearThreshold(int clearThreshold) {
       this.clearThreshold = clearThreshold;
       return self();
    }
 
-   public LevelDBCacheStoreConfigurationBuilder compressionType(CompressionType compressionType) {
+   public LevelDBStoreConfigurationBuilder compressionType(CompressionType compressionType) {
       this.compressionType = compressionType;
       return self();
    }
@@ -73,15 +73,15 @@ public class LevelDBCacheStoreConfigurationBuilder extends AbstractStoreConfigur
    }
 
    @Override
-   public LevelDBCacheStoreConfiguration create() {
-      return new LevelDBCacheStoreConfiguration(purgeOnStartup, fetchPersistentState, ignoreModifications, async.create(),
+   public LevelDBStoreConfiguration create() {
+      return new LevelDBStoreConfiguration(purgeOnStartup, fetchPersistentState, ignoreModifications, async.create(),
                                                 singletonStore.create(), preload, shared, properties,location,
                                                 expiredLocation, implementationType, compressionType,  blockSize,
                                                 cacheSize, expiryQueueSize, clearThreshold);
    }
 
    @Override
-   public Builder<?> read(LevelDBCacheStoreConfiguration template) {
+   public Builder<?> read(LevelDBStoreConfiguration template) {
       location = template.location();
       expiredLocation = template.expiredLocation();
       implementationType = template.implementationType();
@@ -108,7 +108,7 @@ public class LevelDBCacheStoreConfigurationBuilder extends AbstractStoreConfigur
    }
 
    @Override
-   public LevelDBCacheStoreConfigurationBuilder self() {
+   public LevelDBStoreConfigurationBuilder self() {
       return this;
    }
 

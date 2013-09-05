@@ -1,17 +1,17 @@
 package org.infinispan.loaders.leveldb;
 
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
-import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfigurationBuilder;
+import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
+import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfigurationBuilder;
 import org.testng.annotations.Test;
 
 @Test(groups = "unit", testName = "loaders.leveldb.JavaLevelDBCacheStoreTest")
-public class JavaLevelDBCacheStoreTest extends LevelDBCacheStoreTest {
+public class JavaLevelDBCacheStoreTest extends LevelDBStoreTest {
 
-   protected LevelDBCacheStoreConfiguration createCacheStoreConfig(PersistenceConfigurationBuilder lcb) {
-      LevelDBCacheStoreConfigurationBuilder builder = new LevelDBCacheStoreConfigurationBuilder(lcb);
+   protected LevelDBStoreConfiguration createCacheStoreConfig(PersistenceConfigurationBuilder lcb) {
+      LevelDBStoreConfigurationBuilder builder = new LevelDBStoreConfigurationBuilder(lcb);
       builder.read(super.createCacheStoreConfig(lcb));
-      builder.implementationType(LevelDBCacheStoreConfiguration.ImplementationType.JAVA);
+      builder.implementationType(LevelDBStoreConfiguration.ImplementationType.JAVA);
       return builder.create();
    }
 }
