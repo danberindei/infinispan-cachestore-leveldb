@@ -10,7 +10,7 @@ import org.infinispan.configuration.parsing.ConfigurationParser;
 import org.infinispan.configuration.parsing.Namespace;
 import org.infinispan.configuration.parsing.Namespaces;
 import org.infinispan.configuration.parsing.ParseUtils;
-import org.infinispan.configuration.parsing.Parser53;
+import org.infinispan.configuration.parsing.Parser60;
 import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
 import org.iq80.leveldb.CompressionType;
 
@@ -31,7 +31,7 @@ public class LevelDBCacheStoreConfigurationParser60 implements ConfigurationPars
       Element element = Element.forName(reader.getLocalName());
       switch (element) {
       case LEVELDB_STORE: {
-         parseLevelDBCacheStore(reader, builder.loaders().addLoader(LevelDBCacheStoreConfigurationBuilder.class));
+         parseLevelDBCacheStore(reader, builder.persistence().addStore(LevelDBCacheStoreConfigurationBuilder.class));
          break;
       }
       default: {
@@ -43,44 +43,46 @@ public class LevelDBCacheStoreConfigurationParser60 implements ConfigurationPars
    private void parseLevelDBCacheStore(XMLExtendedStreamReader reader, LevelDBCacheStoreConfigurationBuilder builder) throws XMLStreamException {
       for (int i = 0; i < reader.getAttributeCount(); i++) {
          ParseUtils.requireNoNamespaceAttribute(reader, i);
-         String value = StringPropertyReplacer.replaceProperties(reader.getAttributeValue(i));
-         Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+         String attributeValue = reader.getAttributeValue(i);
+         String value = StringPropertyReplacer.replaceProperties(attributeValue);
+         String attrName = reader.getAttributeLocalName(i);
+         Attribute attribute = Attribute.forName(attrName);
 
          switch (attribute) {
-         case LOCATION: {
-            builder.location(value);
-            break;
-         }
-         case EXPIRED_LOCATION: {
-            builder.expiredLocation(value);
-            break;
-         }
-         case IMPLEMENTATION_TYPE: {
-            builder.implementationType(LevelDBCacheStoreConfiguration.ImplementationType.valueOf(value));
-            break;
-         }
-         case CLEAR_THRESHOLD: {
-            builder.clearThreshold(Integer.valueOf(value));
-            break;
-         }
-         case EXPIRY_QUEUE_SIZE: {
-            builder.expiryQueueSize(Integer.valueOf(value));
-         }
-         case BLOCK_SIZE: {
-            builder.blockSize(Integer.valueOf(value));
-            break;
-         }
-         case CACHE_SIZE: {
-            builder.cacheSize(Long.valueOf(value));
-            break;
-         }
-         case COMPRESSION_TYPE: {
-            builder.compressionType(CompressionType.valueOf(value));
-            break;
-         }
-         default: {
-            Parser53.parseCommonStoreAttributes(reader, i, builder);
-         }
+            case LOCATION: {
+               builder.location(value);
+               break;
+            }
+            case EXPIRED_LOCATION: {
+               builder.expiredLocation(value);
+               break;
+            }
+            case IMPLEMENTATION_TYPE: {
+               builder.implementationType(LevelDBCacheStoreConfiguration.ImplementationType.valueOf(value));
+               break;
+            }
+            case CLEAR_THRESHOLD: {
+               builder.clearThreshold(Integer.valueOf(value));
+               break;
+            }
+            case EXPIRY_QUEUE_SIZE: {
+               builder.expiryQueueSize(Integer.valueOf(value));
+            }
+            case BLOCK_SIZE: {
+               builder.blockSize(Integer.valueOf(value));
+               break;
+            }
+            case CACHE_SIZE: {
+               builder.cacheSize(Long.valueOf(value));
+               break;
+            }
+            case COMPRESSION_TYPE: {
+               builder.compressionType(CompressionType.valueOf(value));
+               break;
+            }
+            default: {
+               Parser60.parseCommonStoreAttributes(reader, builder, attrName, attributeValue, i);
+            }
          }
       }
 

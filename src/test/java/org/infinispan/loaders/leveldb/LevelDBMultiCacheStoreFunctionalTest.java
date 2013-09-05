@@ -2,10 +2,10 @@ package org.infinispan.loaders.leveldb;
 
 import java.io.File;
 
-import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
-import org.infinispan.loaders.MultiCacheStoreFunctionalTest;
+import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
 import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfigurationBuilder;
+import org.infinispan.persistence.MultiCacheStoreFunctionalTest;
 import org.infinispan.test.TestingUtil;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -28,9 +28,10 @@ public class LevelDBMultiCacheStoreFunctionalTest extends MultiCacheStoreFunctio
       }
    }
 
+
    @Override
-   protected LevelDBCacheStoreConfigurationBuilder buildCacheStoreConfig(LoadersConfigurationBuilder loaders, String discriminator) {
-      LevelDBCacheStoreConfigurationBuilder store = loaders.addStore(LevelDBCacheStoreConfigurationBuilder.class);
+   protected LevelDBCacheStoreConfigurationBuilder buildCacheStoreConfig(PersistenceConfigurationBuilder p, String discriminator) throws Exception {
+      LevelDBCacheStoreConfigurationBuilder store = p.addStore(LevelDBCacheStoreConfigurationBuilder.class);
       store.location(tmpDir.getAbsolutePath() + File.separator + "leveldb" + File.separator + "data-" + discriminator);
       store.expiredLocation(tmpDir.getAbsolutePath() + File.separator + "leveldb" + File.separator + "expired-data-" + discriminator);
       store.implementationType(LevelDBCacheStoreConfiguration.ImplementationType.JAVA);

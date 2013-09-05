@@ -1,30 +1,17 @@
 package org.infinispan.loaders.leveldb;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.infinispan.Cache;
 import org.infinispan.commons.CacheConfigurationException;
-import org.infinispan.commons.marshall.StreamingMarshaller;
-import org.infinispan.commons.util.InfinispanCollections;
 import org.infinispan.commons.util.Util;
-import org.infinispan.configuration.cache.CacheLoaderConfiguration;
-import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.entries.InternalCacheValue;
-import org.infinispan.loaders.CacheLoaderException;
 import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
 import org.infinispan.loaders.leveldb.logging.Log;
-import org.infinispan.loaders.spi.LockSupportCacheStore;
+import org.infinispan.metadata.InternalMetadata;
+import org.infinispan.persistence.CacheLoaderException;
+import org.infinispan.persistence.PersistenceUtil;
+import org.infinispan.persistence.TaskContextImpl;
+import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
+import org.infinispan.persistence.spi.InitializationContext;
+import org.infinispan.persistence.spi.MarshalledEntry;
 import org.infinispan.util.logging.LogFactory;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
@@ -33,7 +20,19 @@ import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
 import org.iq80.leveldb.ReadOptions;
 
-public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.LinkedBlockingQueue;
+
+public class LevelDBCacheStore implements AdvancedLoadWriteStore {
    private static final Log log = LogFactory.getLog(LevelDBCacheStore.class, Log.class);
 
    private static final String JNI_DB_FACTORY_CLASS_NAME = "org.fusesource.leveldbjni.JniDBFactory";
@@ -45,13 +44,14 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
    private DBFactory dbFactory;
    private DB db;
    private DB expiredDb;
+   private InitializationContext ctx;
+
 
    @Override
-   public void init(CacheLoaderConfiguration config, Cache<?, ?> cache, StreamingMarshaller m) throws CacheLoaderException {
-      this.configuration = validateConfigurationClass(config, LevelDBCacheStoreConfiguration.class);
-      super.init(config, cache, m);
-
+   public void init(InitializationContext ctx) {
+      this.configuration = ctx.getConfiguration();
       this.dbFactory = newDbFactory();
+      this.ctx = ctx;
 
       if (this.dbFactory == null) {
          throw log.cannotLoadlevelDBFactories(Arrays.toString(DB_FACTORY_CLASS_NAMES));
@@ -62,52 +62,45 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
       } else {
          log.infoUsingJNIDbFactory(dbFactoryClassName);
       }
-
    }
 
    protected DBFactory newDbFactory() {
       switch (configuration.implementationType()) {
-      case JNI: {
-         return Util.<DBFactory> getInstance(JNI_DB_FACTORY_CLASS_NAME, LevelDBCacheStore.class.getClassLoader());
-      }
-      case JAVA: {
-         return Util.<DBFactory> getInstance(JAVA_DB_FACTORY_CLASS_NAME, LevelDBCacheStore.class.getClassLoader());
-      }
-      default: {
-         for (String className : DB_FACTORY_CLASS_NAMES) {
-            try {
-               return Util.<DBFactory> getInstance(className, LevelDBCacheStore.class.getClassLoader());
-            } catch (Throwable e) {
-               if (log.isDebugEnabled())
-                  log.debugUnableToInstantiateDbFactory(className, e);
+         case JNI: {
+            return Util.getInstance(JNI_DB_FACTORY_CLASS_NAME, LevelDBCacheStore.class.getClassLoader());
+         }
+         case JAVA: {
+            return Util.getInstance(JAVA_DB_FACTORY_CLASS_NAME, LevelDBCacheStore.class.getClassLoader());
+         }
+         default: {
+            for (String className : DB_FACTORY_CLASS_NAMES) {
+               try {
+                  return Util.getInstance(className, LevelDBCacheStore.class.getClassLoader());
+               } catch (Throwable e) {
+                  if (log.isDebugEnabled())
+                     log.debugUnableToInstantiateDbFactory(className, e);
+               }
             }
          }
       }
-      }
-
       return null;
    }
 
    @Override
-   public void start() throws CacheLoaderException {
+   public void start()  {
       expiryEntryQueue = new LinkedBlockingQueue<ExpiryEntry>(configuration.expiryQueueSize());
 
       try {
-         String cacheFileName = cache.getName().replaceAll("[^a-zA-Z0-9-_\\.]", "_");
+         String cacheFileName = ctx.getCache().getName().replaceAll("[^a-zA-Z0-9-_\\.]", "_");
          db = openDatabase(configuration.location() + cacheFileName, configuration.dataDbOptions());
          expiredDb = openDatabase(configuration.expiredLocation() + cacheFileName, configuration.expiredDbOptions());
       } catch (IOException e) {
          throw new CacheConfigurationException("Unable to open database", e);
       }
-
-      super.start();
    }
 
    /**
     * Creates database if it doesn't exist.
-    * 
-    * @return database at location
-    * @throws IOException
     */
    protected DB openDatabase(String location, Options options) throws IOException {
       File dir = new File(location);
@@ -145,7 +138,7 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
    }
 
    @Override
-   public void stop() throws CacheLoaderException {
+   public void stop()  {
       try {
          db.close();
       } catch (IOException e) {
@@ -157,12 +150,10 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
       } catch (IOException e) {
          log.warnUnableToCloseExpiredDb(e);
       }
-
-      super.stop();
    }
 
    @Override
-   protected void clearLockSafe() throws CacheLoaderException {
+   public void clear() {
       long count = 0;
       DBIterator it = db.iterator(new ReadOptions().fillCache(false));
       boolean destroyDatabase = false;
@@ -200,72 +191,47 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
    }
 
    @Override
-   protected Set<InternalCacheEntry> loadAllLockSafe() throws CacheLoaderException {
-      Set<InternalCacheEntry> entries = new HashSet<InternalCacheEntry>();
+   public int size() {
+      return PersistenceUtil.count(this, null);
+   }
 
+   @Override
+   public boolean contains(Object key) {
+      try {
+         return load(key) != null;
+      } catch (Exception e) {
+         throw new CacheLoaderException(e);
+      }
+   }
+
+   @SuppressWarnings("unchecked")
+   @Override
+   public void process(KeyFilter keyFilter, CacheLoaderTask cacheLoaderTask, Executor executor, boolean loadValues, boolean loadMetadata) {
+
+      int batchSize = 100;
+      ExecutorCompletionService ecs = new ExecutorCompletionService(executor);
+      int tasks = 0;
+      final TaskContext taskContext = new TaskContextImpl();
+
+      List<Map.Entry<byte[], byte[]>> entries = new ArrayList<Map.Entry<byte[], byte[]>>(batchSize);
       DBIterator it = db.iterator(new ReadOptions().fillCache(false));
       try {
          for (it.seekToFirst(); it.hasNext();) {
             Map.Entry<byte[], byte[]> entry = it.next();
-            entries.add(unmarshall(entry));
+            entries.add(entry);
+            if (entries.size() == batchSize) {
+               final List<Map.Entry<byte[], byte[]>> batch = entries;
+               entries = new ArrayList<Map.Entry<byte[], byte[]>>(batchSize);
+               submitProcessTask(cacheLoaderTask, keyFilter,ecs, taskContext, batch);
+               tasks++;
+            }
          }
-      } catch (Exception e) {
-         throw new CacheLoaderException(e);
-      } finally {
-         try {
-            it.close();
-         } catch (IOException e) {
-            log.warnUnableToCloseDbIterator(e);
-         }
-      }
-
-      return entries;
-   }
-
-   @Override
-   protected Set<InternalCacheEntry> loadLockSafe(int maxEntries) throws CacheLoaderException {
-      if (maxEntries <= 0)
-         return InfinispanCollections.emptySet();
-
-      Set<InternalCacheEntry> entries = new HashSet<InternalCacheEntry>();
-
-      DBIterator it = db.iterator(new ReadOptions().fillCache(false));
-      try {
-         it.seekToFirst();
-         for (int i = 0; it.hasNext() && i < maxEntries; i++) {
-            Map.Entry<byte[], byte[]> entry = it.next();
-            entries.add(unmarshall(entry));
-         }
-      } catch (Exception e) {
-         throw new CacheLoaderException(e);
-      } finally {
-         try {
-            it.close();
-         } catch (IOException e) {
-            log.warnUnableToCloseDbIterator(e);
-         }
-      }
-
-      return entries;
-   }
-
-   @Override
-   protected Set<Object> loadAllKeysLockSafe(Set<Object> keysToExclude) throws CacheLoaderException {
-      if (!cache.getStatus().allowInvocations())
-         return InfinispanCollections.emptySet();
-
-      Set<Object> keys = new HashSet<Object>();
-
-      DBIterator it = db.iterator(new ReadOptions().fillCache(false));
-      try {
-         for (it.seekToFirst(); it.hasNext();) {
-            Map.Entry<byte[], byte[]> entry = it.next();
-            Object key = unmarshall(entry.getKey());
-            if (keysToExclude == null || keysToExclude.isEmpty() || !keysToExclude.contains(key))
-               keys.add(key);
+         if (!entries.isEmpty()) {
+            submitProcessTask(cacheLoaderTask, keyFilter,ecs, taskContext, entries);
+            tasks++;
          }
 
-         return keys;
+         PersistenceUtil.waitForAllTasksToComplete(ecs, tasks);
       } catch (Exception e) {
          throw new CacheLoaderException(e);
       } finally {
@@ -277,48 +243,26 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
       }
    }
 
-   @Override
-   protected void toStreamLockSafe(ObjectOutput oos) throws CacheLoaderException {
-      DBIterator it = db.iterator(new ReadOptions().fillCache(false));
-      try {
-
-         for (it.seekToFirst(); it.hasNext();) {
-            Map.Entry<byte[], byte[]> entry = it.next();
-            InternalCacheEntry ice = unmarshall(entry);
-            getMarshaller().objectToObjectStream(ice, oos);
+   @SuppressWarnings("unchecked")
+   private void submitProcessTask(final CacheLoaderTask cacheLoaderTask, final KeyFilter filter, ExecutorCompletionService ecs,
+                                  final TaskContext taskContext, final List<Map.Entry<byte[], byte[]>> batch) {
+      ecs.submit(new Callable<Void>() {
+         @Override
+         public Void call() throws Exception {
+            for (Map.Entry<byte[], byte[]> entry : batch) {
+               if (taskContext.isStopped())
+                  break;
+               Object key = unmarshall(entry.getKey());
+               if (filter == null || filter.shouldLoadKey(key))
+                  cacheLoaderTask.processEntry((MarshalledEntry) unmarshall(entry.getValue()), taskContext);
+            }
+            return null;
          }
-         getMarshaller().objectToObjectStream(null, oos);
-      } catch (Exception e) {
-         throw new CacheLoaderException(e);
-      } finally {
-         try {
-            it.close();
-         } catch (IOException e) {
-            log.warnUnableToCloseDbIterator(e);
-         }
-      }
+      });
    }
 
    @Override
-   protected void fromStreamLockSafe(ObjectInput ois) throws CacheLoaderException {
-      try {
-         while (true) {
-            InternalCacheEntry entry = (InternalCacheEntry) getMarshaller().objectFromObjectStream(ois);
-            if (entry == null)
-               break;
-
-            db.put(marshall(entry.getKey()), marshall(entry));
-         }
-      } catch (InterruptedException ie) {
-         Thread.currentThread().interrupt();
-      } catch (Exception e) {
-         throw new CacheLoaderException(e);
-      }
-
-   }
-
-   @Override
-   protected boolean removeLockSafe(Object key, Integer lockingKey) throws CacheLoaderException {
+   public boolean delete(Object key)  {
       try {
          byte[] keyBytes = marshall(key);
          if (db.get(keyBytes) == null) {
@@ -332,11 +276,12 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
    }
 
    @Override
-   protected void storeLockSafe(InternalCacheEntry ed, Integer lockingKey) throws CacheLoaderException {
+   public void write(MarshalledEntry me)  {
       try {
-         db.put(marshall(ed.getKey()), marshall(ed));
-         if (ed.canExpire()) {
-            addNewExpiry(ed);
+         db.put(marshall(me.getKey()), marshall(me));
+         InternalMetadata meta = me.getMetadata();
+         if (meta != null && meta.expiryTime() > -1) {
+            addNewExpiry(me);
          }
       } catch (Exception e) {
          throw new DBException(e);
@@ -344,27 +289,24 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
    }
 
    @Override
-   protected InternalCacheEntry loadLockSafe(Object key, Integer lockingKey) throws CacheLoaderException {
+   public MarshalledEntry load(Object key)  {
       try {
-         InternalCacheEntry ice = unmarshall(db.get(marshall(key)), key);
-         if (ice != null && ice.isExpired(System.currentTimeMillis())) {
-            removeLockSafe(key, lockingKey);
+         MarshalledEntry me = (MarshalledEntry) unmarshall(db.get(marshall(key)));
+         if (me == null) return null;
+
+         InternalMetadata meta = me.getMetadata();
+         if (meta != null && meta.isExpired(ctx.getTimeService().wallClockTime())) {
             return null;
          }
-         return ice;
+         return me;
       } catch (Exception e) {
          throw new CacheLoaderException(e);
       }
    }
 
-   @Override
-   protected Integer getLockFromKey(Object key) throws CacheLoaderException {
-      return key.hashCode();
-   }
-
    @SuppressWarnings("unchecked")
    @Override
-   protected void purgeInternal() throws CacheLoaderException {
+   public void purge(Executor executor, PurgeListener purgeListener) {
       try {
          // Drain queue and update expiry tree
          List<ExpiryEntry> entries = new ArrayList<ExpiryEntry>();
@@ -423,8 +365,8 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
                byte[] b = db.get(keyBytes);
                if (b == null)
                   continue;
-               InternalCacheValue ice = (InternalCacheValue) getMarshaller().objectFromByteBuffer(b);
-               if (ice.isExpired(currentTimeMillis)) {
+               MarshalledEntry me = (MarshalledEntry) ctx.getMarshaller().objectFromByteBuffer(b);
+               if (me.getMetadata() != null && me.getMetadata().isExpired(ctx.getTimeService().wallClockTime())) {
                   // somewhat inefficient to FIND then REMOVE...
                   db.delete(keyBytes);
                   count++;
@@ -448,46 +390,26 @@ public class LevelDBCacheStore extends LockSupportCacheStore<Integer> {
       }
    }
 
-   private byte[] marshall(InternalCacheEntry entry) throws IOException, InterruptedException {
-      return marshall(entry.toInternalCacheValue());
-   }
-
    private byte[] marshall(Object entry) throws IOException, InterruptedException {
-      return getMarshaller().objectToByteBuffer(entry);
+      return ctx.getMarshaller().objectToByteBuffer(entry);
    }
 
    private Object unmarshall(byte[] bytes) throws IOException, ClassNotFoundException {
       if (bytes == null)
          return null;
 
-      return getMarshaller().objectFromByteBuffer(bytes);
+      return ctx.getMarshaller().objectFromByteBuffer(bytes);
    }
 
-   private InternalCacheEntry unmarshall(Map.Entry<byte[], byte[]> entry) throws IOException, ClassNotFoundException {
-      if (entry == null || entry.getValue() == null)
-         return null;
-
-      InternalCacheValue v = (InternalCacheValue) unmarshall(entry.getValue());
-      Object k = unmarshall(entry.getKey());
-      return v.toInternalCacheEntry(k);
-   }
-
-   private InternalCacheEntry unmarshall(byte[] value, Object key) throws IOException, ClassNotFoundException {
-      if (value == null)
-         return null;
-
-      InternalCacheValue v = (InternalCacheValue) unmarshall(value);
-      return v.toInternalCacheEntry(key);
-   }
-
-   private void addNewExpiry(InternalCacheEntry entry) throws IOException {
-      long expiry = entry.getExpiryTime();
-      if (entry.getMaxIdle() > 0) {
+   private void addNewExpiry(MarshalledEntry entry) throws IOException {
+      long expiry = entry.getMetadata().expiryTime();
+      long maxIdle = entry.getMetadata().maxIdle();
+      if (maxIdle > 0) {
          // Coding getExpiryTime() for transient entries has the risk of
          // being a moving target
          // which could lead to unexpected results, hence, InternalCacheEntry
          // calls are required
-         expiry = entry.getMaxIdle() + System.currentTimeMillis();
+         expiry = maxIdle + System.currentTimeMillis();
       }
       Long at = expiry;
       Object key = entry.getKey();

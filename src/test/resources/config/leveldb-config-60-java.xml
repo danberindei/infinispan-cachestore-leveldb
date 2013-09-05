@@ -41,9 +41,9 @@
    </default>
 
    <namedCache name="testCache">
-      <loaders passivation="false" shared="true" preload="true">
-         <leveldbStore location="/tmp/leveldb/52/data" expiredLocation="/tmp/leveldb/52/expired" implementationType="JAVA" />
-      </loaders>
+      <persistence passivation="false">
+         <leveldbStore location="/tmp/leveldb/52/data" expiredLocation="/tmp/leveldb/52/expired" implementationType="JAVA" shared="true" preload="true"/>
+      </persistence>
    </namedCache>
 
 </infinispan>

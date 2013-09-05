@@ -2,13 +2,14 @@ package org.infinispan.loaders.leveldb.configuration;
 
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.configuration.ConfigurationFor;
-import org.infinispan.commons.util.TypedProperties;
-import org.infinispan.configuration.cache.AbstractLockSupportStoreConfiguration;
+import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
 import org.infinispan.loaders.leveldb.LevelDBCacheStore;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.Options;
+
+import java.util.Properties;
 
 /**
  * 
@@ -17,7 +18,7 @@ import org.iq80.leveldb.Options;
  */
 @ConfigurationFor(LevelDBCacheStore.class)
 @BuiltBy(LevelDBCacheStoreConfigurationBuilder.class)
-public class LevelDBCacheStoreConfiguration extends AbstractLockSupportStoreConfiguration {
+public class LevelDBCacheStoreConfiguration extends AbstractStoreConfiguration {
    public enum ImplementationType {
       AUTO,
       JAVA,
@@ -33,13 +34,9 @@ public class LevelDBCacheStoreConfiguration extends AbstractLockSupportStoreConf
    final private int expiryQueueSize;
    final private int clearThreshold;
 
-   protected LevelDBCacheStoreConfiguration(String location, String expiredLocation, ImplementationType implementationType, CompressionType compressionType, Integer blockSize,
-         Long cacheSize, int expiryQueueSize, int clearThreshold, long lockAcquistionTimeout, int lockConcurrencyLevel, boolean purgeOnStartup, boolean purgeSynchronously,
-         int purgerThreads, boolean fetchPersistentState, boolean ignoreModifications, TypedProperties properties, AsyncStoreConfiguration async,
-         SingletonStoreConfiguration singletonStore) {
-      super(lockAcquistionTimeout, lockConcurrencyLevel, purgeOnStartup, purgeSynchronously, purgerThreads, fetchPersistentState, ignoreModifications, properties, async,
-            singletonStore);
 
+   public LevelDBCacheStoreConfiguration(boolean purgeOnStartup, boolean fetchPersistentState, boolean ignoreModifications, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore, boolean preload, boolean shared, Properties properties, String location, String expiredLocation, ImplementationType implementationType, CompressionType compressionType, Integer blockSize, Long cacheSize, int expiryQueueSize, int clearThreshold) {
+      super(purgeOnStartup, fetchPersistentState, ignoreModifications, async, singletonStore, preload, shared, properties);
       this.location = location;
       this.expiredLocation = expiredLocation;
       this.implementationType = implementationType;

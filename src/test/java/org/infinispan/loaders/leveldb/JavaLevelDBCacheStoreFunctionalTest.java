@@ -1,6 +1,6 @@
 package org.infinispan.loaders.leveldb;
 
-import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
+import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.loaders.leveldb.configuration.LevelDBCacheStoreConfiguration;
 import org.testng.annotations.Test;
 
@@ -8,8 +8,8 @@ import org.testng.annotations.Test;
 public class JavaLevelDBCacheStoreFunctionalTest extends LevelDBCacheStoreFunctionalTest {
 
    @Override
-   protected LoadersConfigurationBuilder createCacheStoreConfig(LoadersConfigurationBuilder loaders) {
-      super.createStoreBuilder(loaders).implementationType(LevelDBCacheStoreConfiguration.ImplementationType.JAVA);
+   protected PersistenceConfigurationBuilder createCacheStoreConfig(PersistenceConfigurationBuilder loaders, boolean preload) {
+      super.createStoreBuilder(loaders).implementationType(LevelDBCacheStoreConfiguration.ImplementationType.JAVA).preload(preload);
       return loaders;
    }
 }

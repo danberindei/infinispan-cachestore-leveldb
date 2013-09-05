@@ -1,9 +1,8 @@
 package org.infinispan.loaders.leveldb.configuration;
 
 import org.infinispan.commons.configuration.Builder;
-import org.infinispan.commons.util.TypedProperties;
-import org.infinispan.configuration.cache.AbstractLockSupportStoreConfigurationBuilder;
-import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
+import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
+import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.iq80.leveldb.CompressionType;
 
 /**
@@ -11,7 +10,7 @@ import org.iq80.leveldb.CompressionType;
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  * 
  */
-public class LevelDBCacheStoreConfigurationBuilder extends AbstractLockSupportStoreConfigurationBuilder<LevelDBCacheStoreConfiguration, LevelDBCacheStoreConfigurationBuilder> {
+public class LevelDBCacheStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<LevelDBCacheStoreConfiguration, LevelDBCacheStoreConfigurationBuilder> {
 
    protected String location = "Infinispan-LevelDBCacheStore/data";
    protected String expiredLocation = "Infinispan-LevelDBCacheStore/expired";
@@ -23,7 +22,7 @@ public class LevelDBCacheStoreConfigurationBuilder extends AbstractLockSupportSt
    protected int expiryQueueSize = 10000;
    protected int clearThreshold = 10000;
 
-   public LevelDBCacheStoreConfigurationBuilder(LoadersConfigurationBuilder builder) {
+   public LevelDBCacheStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
       super(builder);
    }
 
@@ -75,9 +74,10 @@ public class LevelDBCacheStoreConfigurationBuilder extends AbstractLockSupportSt
 
    @Override
    public LevelDBCacheStoreConfiguration create() {
-      return new LevelDBCacheStoreConfiguration(location, expiredLocation, implementationType, compressionType, blockSize, cacheSize, expiryQueueSize, clearThreshold,
-            lockAcquistionTimeout, lockConcurrencyLevel, purgeOnStartup, purgeSynchronously, purgerThreads, fetchPersistentState, ignoreModifications,
-            TypedProperties.toTypedProperties(properties), async.create(), singletonStore.create());
+      return new LevelDBCacheStoreConfiguration(purgeOnStartup, fetchPersistentState, ignoreModifications, async.create(),
+                                                singletonStore.create(), preload, shared, properties,location,
+                                                expiredLocation, implementationType, compressionType,  blockSize,
+                                                cacheSize, expiryQueueSize, clearThreshold);
    }
 
    @Override
@@ -85,6 +85,8 @@ public class LevelDBCacheStoreConfigurationBuilder extends AbstractLockSupportSt
       location = template.location();
       expiredLocation = template.expiredLocation();
       implementationType = template.implementationType();
+      preload = template.preload();
+      shared = template.shared();
 
       compressionType = template.compressionType();
       blockSize = template.blockSize();
@@ -93,16 +95,12 @@ public class LevelDBCacheStoreConfigurationBuilder extends AbstractLockSupportSt
       expiryQueueSize = template.expiryQueueSize();
       clearThreshold = template.clearThreshold();
 
-      // LockSupportStore-specific configuration
-      lockAcquistionTimeout = template.lockAcquistionTimeout();
-      lockConcurrencyLevel = template.lockConcurrencyLevel();
 
       // AbstractStore-specific configuration
       fetchPersistentState = template.fetchPersistentState();
       ignoreModifications = template.ignoreModifications();
       properties = template.properties();
       purgeOnStartup = template.purgeOnStartup();
-      purgeSynchronously = template.purgeSynchronously();
       this.async.read(template.async());
       this.singletonStore.read(template.singletonStore());
 
