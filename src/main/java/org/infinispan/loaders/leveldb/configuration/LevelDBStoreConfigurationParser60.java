@@ -12,14 +12,13 @@ import org.infinispan.configuration.parsing.Namespaces;
 import org.infinispan.configuration.parsing.ParseUtils;
 import org.infinispan.configuration.parsing.Parser60;
 import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
-import org.iq80.leveldb.CompressionType;
 
 /**
- * 
+ *
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
- * 
+ *
  */
-@Namespaces({ @Namespace(uri = "urn:infinispan:config:leveldb:6.0", root = "leveldbStore"), @Namespace(root = "leveldbStore") })
+@Namespaces({ @Namespace(uri = "urn:infinispan:config:store:leveldb:6.0", root = "leveldbStore"), @Namespace(root = "leveldbStore") })
 public class LevelDBStoreConfigurationParser60 implements ConfigurationParser {
 
    public LevelDBStoreConfigurationParser60() {

@@ -12,6 +12,7 @@ import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.MarshalledEntry;
 import org.infinispan.util.logging.LogFactory;
+import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
 import org.iq80.leveldb.DBFactory;
@@ -91,11 +92,31 @@ public class LevelDBStore implements AdvancedLoadWriteStore {
 
       try {
          String cacheFileName = ctx.getCache().getName().replaceAll("[^a-zA-Z0-9-_\\.]", "_");
-         db = openDatabase(configuration.location() + cacheFileName, configuration.dataDbOptions());
-         expiredDb = openDatabase(configuration.expiredLocation() + cacheFileName, configuration.expiredDbOptions());
+         db = openDatabase(configuration.location() + cacheFileName, dataDbOptions());
+         expiredDb = openDatabase(configuration.expiredLocation() + cacheFileName, expiredDbOptions());
       } catch (IOException e) {
          throw new CacheConfigurationException("Unable to open database", e);
       }
+   }
+
+   private Options dataDbOptions() {
+      Options options = new Options().createIfMissing(true);
+
+      options.compressionType(CompressionType.valueOf(configuration.compressionType().name()));
+
+      if (configuration.blockSize() != null) {
+         options.blockSize(configuration.blockSize());
+      }
+
+      if (configuration.cacheSize() != null) {
+         options.cacheSize(configuration.cacheSize());
+      }
+
+      return options;
+   }
+
+   private Options expiredDbOptions() {
+      return new Options().createIfMissing(true);
    }
 
    /**
@@ -132,8 +153,8 @@ public class LevelDBStore implements AdvancedLoadWriteStore {
       } catch (IOException e) {
          log.warnUnableToCloseExpiredDb(e);
       }
-      db = reinitDatabase(configuration.location(), configuration.dataDbOptions());
-      expiredDb = reinitDatabase(configuration.expiredLocation(), configuration.expiredDbOptions());
+      db = reinitDatabase(configuration.location(), dataDbOptions());
+      expiredDb = reinitDatabase(configuration.expiredLocation(), expiredDbOptions());
    }
 
    @Override

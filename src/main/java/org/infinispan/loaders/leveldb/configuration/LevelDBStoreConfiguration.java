@@ -6,16 +6,12 @@ import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
 import org.infinispan.loaders.leveldb.LevelDBStore;
-import org.infinispan.loaders.leveldb.LevelDBStore;
-import org.iq80.leveldb.CompressionType;
-import org.iq80.leveldb.Options;
-
 import java.util.Properties;
 
 /**
- * 
+ *
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
- * 
+ *
  */
 @ConfigurationFor(LevelDBStore.class)
 @BuiltBy(LevelDBStoreConfigurationBuilder.class)
@@ -78,25 +74,5 @@ public class LevelDBStoreConfiguration extends AbstractStoreConfiguration {
 
    public int clearThreshold() {
       return clearThreshold;
-   }
-
-   public Options dataDbOptions() {
-      Options options = new Options().createIfMissing(true);
-
-      options.compressionType(compressionType);
-
-      if (blockSize != null) {
-         options.blockSize(blockSize);
-      }
-
-      if (cacheSize != null) {
-         options.cacheSize(cacheSize);
-      }
-
-      return options;
-   }
-
-   public Options expiredDbOptions() {
-      return new Options().createIfMissing(true);
    }
 }

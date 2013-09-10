@@ -3,12 +3,11 @@ package org.infinispan.loaders.leveldb.configuration;
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.iq80.leveldb.CompressionType;
 
 /**
- * 
+ *
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
- * 
+ *
  */
 public class LevelDBStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<LevelDBStoreConfiguration, LevelDBStoreConfigurationBuilder> {
 
