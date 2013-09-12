@@ -4,8 +4,8 @@ import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
 import org.testng.annotations.Test;
 
-@Test(groups = "unit", testName = "loaders.leveldb.JniLevelDBCacheStoreFunctionalTest")
-public class JniLevelDBCacheStoreFunctionalTest extends LevelDBCacheStoreFunctionalTest {
+@Test(groups = "unit", testName = "loaders.leveldb.JniLevelDBStoreFunctionalTest")
+public class JniLevelDBStoreFunctionalTest extends LevelDBStoreFunctionalTest {
 
    @Override
    protected PersistenceConfigurationBuilder createCacheStoreConfig(PersistenceConfigurationBuilder p, boolean preload) {

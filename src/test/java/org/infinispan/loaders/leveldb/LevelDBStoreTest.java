@@ -1,7 +1,6 @@
 package org.infinispan.loaders.leveldb;
 
-import java.io.File;
-
+import org.infinispan.commons.io.ByteBufferFactoryImpl;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -10,9 +9,10 @@ import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
 import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.persistence.BaseCacheStoreTest;
+import org.infinispan.marshall.core.MarshalledEntryFactoryImpl;
+import org.infinispan.persistence.BaseStoreTest;
 import org.infinispan.persistence.CacheLoaderException;
-import org.infinispan.persistence.DummyLoaderContext;
+import org.infinispan.persistence.DummyInitializationContext;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -23,8 +23,10 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.File;
+
 @Test(groups = "unit", testName = "loaders.leveldb.LevelDBStoreTest")
-public class LevelDBStoreTest extends BaseCacheStoreTest {
+public class LevelDBStoreTest extends BaseStoreTest {
 
    private LevelDBStore fcs;
    private String tmpDirectory;
@@ -68,7 +70,8 @@ public class LevelDBStoreTest extends BaseCacheStoreTest {
       fcs = new LevelDBStore();
       ConfigurationBuilder cb = new ConfigurationBuilder();
       LevelDBStoreConfiguration cfg = createCacheStoreConfig(cb.persistence());
-      fcs.init(new DummyLoaderContext(cfg, getCache(), getMarshaller()));
+      fcs.init(new DummyInitializationContext(cfg, getCache(), getMarshaller(), new ByteBufferFactoryImpl(),
+                                              new MarshalledEntryFactoryImpl(getMarshaller())));
       fcs.start();
       return fcs;
    }

@@ -1,15 +1,15 @@
 package org.infinispan.loaders.leveldb;
 
-import java.io.File;
-
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfigurationBuilder;
-import org.infinispan.persistence.BaseCacheStoreFunctionalTest;
+import org.infinispan.persistence.BaseStoreFunctionalTest;
 import org.infinispan.test.TestingUtil;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-public abstract class LevelDBCacheStoreFunctionalTest extends BaseCacheStoreFunctionalTest {
+import java.io.File;
+
+public abstract class LevelDBStoreFunctionalTest extends BaseStoreFunctionalTest {
    protected String tmpDirectory;
 
    @BeforeClass
