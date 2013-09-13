@@ -1,4 +1,4 @@
-package org.infinispan.loaders.leveldb.configuration;
+package org.infinispan.persistence.leveldb.configuration;
 
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;

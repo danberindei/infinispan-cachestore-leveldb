@@ -1,4 +1,4 @@
-package org.infinispan.loaders.leveldb.config;
+package org.infinispan.persistence.leveldb.config;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -6,8 +6,8 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
-import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfigurationBuilder;
+import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfiguration;
+import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.AbstractInfinispanTest;
@@ -26,7 +26,7 @@ import static org.testng.AssertJUnit.assertTrue;
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  *
  */
-@Test(groups = "unit", testName = "loaders.leveldb.configuration.ConfigurationTest")
+@Test(groups = "unit", testName = "persistence.leveldb.configuration.ConfigurationTest")
 public class ConfigurationTest extends AbstractInfinispanTest {
    private String tmpDirectory;
    private String tmpDataDirectory;

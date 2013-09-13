@@ -1,4 +1,4 @@
-package org.infinispan.loaders.leveldb;
+package org.infinispan.persistence.leveldb;
 
 import org.infinispan.commons.io.ByteBufferFactoryImpl;
 import org.infinispan.commons.marshall.StreamingMarshaller;
@@ -6,8 +6,8 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
-import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfigurationBuilder;
+import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfiguration;
+import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledEntryFactoryImpl;
 import org.infinispan.persistence.BaseStoreTest;
@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 
-@Test(groups = "unit", testName = "loaders.leveldb.LevelDBStoreTest")
+@Test(groups = "unit", testName = "persistence.leveldb.LevelDBStoreTest")
 public class LevelDBStoreTest extends BaseStoreTest {
 
    private LevelDBStore fcs;

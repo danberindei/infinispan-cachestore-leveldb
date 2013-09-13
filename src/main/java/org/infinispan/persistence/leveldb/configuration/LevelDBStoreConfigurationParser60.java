@@ -1,4 +1,4 @@
-package org.infinispan.loaders.leveldb.configuration;
+package org.infinispan.persistence.leveldb.configuration;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;

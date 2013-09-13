@@ -1,7 +1,7 @@
-package org.infinispan.loaders.leveldb;
+package org.infinispan.persistence.leveldb;
 
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfigurationBuilder;
+import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationBuilder;
 import org.infinispan.persistence.BaseStoreFunctionalTest;
 import org.infinispan.test.TestingUtil;
 import org.testng.annotations.AfterClass;

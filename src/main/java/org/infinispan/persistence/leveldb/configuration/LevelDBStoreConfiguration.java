@@ -1,11 +1,11 @@
-package org.infinispan.loaders.leveldb.configuration;
+package org.infinispan.persistence.leveldb.configuration;
 
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.configuration.ConfigurationFor;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
-import org.infinispan.loaders.leveldb.LevelDBStore;
+import org.infinispan.persistence.leveldb.LevelDBStore;
 import java.util.Properties;
 
 /**

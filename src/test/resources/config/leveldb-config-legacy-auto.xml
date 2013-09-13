@@ -44,7 +44,7 @@
 
    <namedCache name="testCache">
       <loaders passivation="false" shared="true" preload="true">
-         <loader class="org.infinispan.loaders.leveldb.LevelDBStore" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
+         <loader class="org.infinispan.persistence.leveldb.LevelDBStore" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
             <properties>
                <property name="location" value="/tmp/leveldb/legacy/data" />
                <property name="expiredLocation" value="/tmp/leveldb/legacy/expired" />

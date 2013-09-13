@@ -1,10 +1,10 @@
-package org.infinispan.loaders.leveldb;
+package org.infinispan.persistence.leveldb;
 
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
+import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfiguration;
 import org.testng.annotations.Test;
 
-@Test(groups = "unit", testName = "loaders.leveldb.JavaLevelDBStoreFunctionalTest")
+@Test(groups = "unit", testName = "persistence.leveldb.JavaLevelDBStoreFunctionalTest")
 public class JavaLevelDBStoreFunctionalTest extends LevelDBStoreFunctionalTest {
 
    @Override

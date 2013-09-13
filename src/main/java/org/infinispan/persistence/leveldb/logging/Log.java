@@ -1,4 +1,4 @@
-package org.infinispan.loaders.leveldb.logging;
+package org.infinispan.persistence.leveldb.logging;
 
 import org.infinispan.persistence.CacheLoaderException;
 import org.jboss.logging.Cause;

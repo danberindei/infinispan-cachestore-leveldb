@@ -1,9 +1,9 @@
-package org.infinispan.loaders.leveldb;
+package org.infinispan.persistence.leveldb;
 
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.util.Util;
-import org.infinispan.loaders.leveldb.configuration.LevelDBStoreConfiguration;
-import org.infinispan.loaders.leveldb.logging.Log;
+import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfiguration;
+import org.infinispan.persistence.leveldb.logging.Log;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.persistence.CacheLoaderException;
